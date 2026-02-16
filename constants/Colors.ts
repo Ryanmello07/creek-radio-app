@@ -1,0 +1,17 @@
+export const Colors = {
+  bg: '#000000',
+  bgLight: '#0A0A0A',
+  bgPanel: '#050505',
+  border: '#BE2B97',
+  borderDim: '#5F164C',
+  magenta: '#BE2B97',
+  brightMagenta: '#D93DAD',
+  green: '#00FF41',
+  greenDim: '#00CC33',
+  red: '#FF3333',
+  darkRed: '#CC0000',
+  white: '#FFFFFF',
+  text: '#FFFFFF',
+  textDim: '#999999',
+  yellow: '#FFFF00',
+};
