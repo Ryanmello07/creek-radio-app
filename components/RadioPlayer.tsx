@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';
 import { useAudioPlayer, AudioSource } from 'expo-audio';
+import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
 import { TacticalPanel } from './TacticalPanel';
 
@@ -80,6 +81,13 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
     player.volume = newMuted ? 0 : volume;
   };
 
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+    if (!isMuted) {
+      player.volume = newVolume;
+    }
+  };
+
   const getStatusText = () => {
     if (isLoading) return 'CONNECTING...';
     if (player.playing) return 'ONLINE';
@@ -134,6 +142,17 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
             <Text style={styles.volumeLabel}>AUDIO LEVEL</Text>
             <Text style={styles.volumeValue}>{Math.round(volume * 100)}%</Text>
           </View>
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={1}
+            value={volume}
+            onValueChange={handleVolumeChange}
+            minimumTrackTintColor={Colors.magenta}
+            maximumTrackTintColor={Colors.borderDim}
+            thumbTintColor={Colors.green}
+            disabled={isMuted}
+          />
           <TouchableOpacity onPress={toggleMute} style={styles.muteButton}>
             {isMuted ? (
               <VolumeX size={24} color={Colors.magenta} />
@@ -253,6 +272,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
     marginBottom: 12,
   },
   volumeLabel: {

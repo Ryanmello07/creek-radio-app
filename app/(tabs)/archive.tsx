@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     color: Colors.textDim,
   },
   playerContainer: {
-    height: 120,
+    height: 180,
     backgroundColor: Colors.bg,
     borderWidth: 2,
     borderColor: Colors.borderDim,
