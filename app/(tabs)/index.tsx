@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Linking, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { RadioPlayer } from '@/components/RadioPlayer';
@@ -7,7 +7,7 @@ import { NowPlaying } from '@/components/NowPlaying';
 import { HazardStripes } from '@/components/HazardStripes';
 import { TacticalPanel } from '@/components/TacticalPanel';
 import { icecastService, StreamMetadata } from '@/services/icecastMetadata';
-import { ExternalLink, MessageCircle, Radio } from 'lucide-react-native';
+import { ExternalLink, MessageCircle } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const [metadata, setMetadata] = useState<StreamMetadata>({
@@ -43,7 +43,10 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.header}>
-          <Radio size={32} color={Colors.magenta} />
+          <Image
+            source={require('@/assets/images/creek_radio_icon_512.png')}
+            style={styles.logo}
+          />
           <View style={styles.headerText}>
             <Text style={styles.title}>CREEK RADIO</Text>
             <Text style={styles.subtitle}>
@@ -137,6 +140,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
     marginBottom: 16,
+  },
+  logo: {
+    width: 48,
+    height: 48,
+    resizeMode: 'contain',
   },
   headerText: {
     flex: 1,
