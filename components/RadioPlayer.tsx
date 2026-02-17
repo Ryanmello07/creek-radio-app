@@ -17,16 +17,23 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
   const [isMuted, setIsMuted] = useState(false);
   const player = useAudioPlayer({ uri: STREAM_URL } as AudioSource);
   const volumeCheckInterval = useRef<NodeJS.Timeout | null>(null);
+  const volumeRef = useRef(0.7);
 
-  // Sync volume display with player's actual volume
+  // Keep ref in sync with state
   useEffect(() => {
-    // Set initial volume
-    player.volume = isMuted ? 0 : volume;
+    volumeRef.current = volume;
+  }, [volume]);
 
-    // Poll player volume to sync with system volume changes (hardware buttons)
+  // Set player volume when volume or mute state changes
+  useEffect(() => {
+    player.volume = isMuted ? 0 : volume;
+  }, [volume, isMuted, player]);
+
+  // Poll player volume to sync with system volume changes (hardware buttons)
+  useEffect(() => {
     volumeCheckInterval.current = setInterval(() => {
       const currentPlayerVolume = player.volume;
-      if (!isMuted && Math.abs(currentPlayerVolume - volume) > 0.01) {
+      if (!isMuted && Math.abs(currentPlayerVolume - volumeRef.current) > 0.01) {
         setVolume(currentPlayerVolume);
       }
     }, 200);
@@ -36,8 +43,9 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
         clearInterval(volumeCheckInterval.current);
       }
     };
-  }, [volume, isMuted, player]);
+  }, [isMuted, player]);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (player.playing) {
