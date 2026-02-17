@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';
-import { useAudioPlayer, AudioSource } from 'expo-audio';
+import { useAudioPlayer, AudioSource, setAudioModeAsync } from 'expo-audio';
 import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
 import { TacticalPanel } from './TacticalPanel';
@@ -46,6 +46,17 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
       }
     };
   }, [isMuted, player]);
+
+  // Configure audio mode for background playback
+  useEffect(() => {
+    setAudioModeAsync({
+      shouldPlayInBackground: true,
+      playsInSilentMode: true,
+      interruptionMode: 'doNotMix',
+    }).catch((error) => {
+      console.error('Failed to set audio mode:', error);
+    });
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
