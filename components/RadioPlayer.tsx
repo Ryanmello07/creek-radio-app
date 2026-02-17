@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';
-import { Audio } from 'expo-av';
+import { useAudioPlayer, AudioSource } from 'expo-audio';
 import { Colors } from '@/constants/Colors';
 import { TacticalPanel } from './TacticalPanel';
 
@@ -12,62 +12,31 @@ interface RadioPlayerProps {
 }
 
 export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const player = useAudioPlayer({ uri: STREAM_URL } as AudioSource);
 
   useEffect(() => {
-    setupAudio();
+    player.volume = isMuted ? 0 : volume;
+  }, [volume, isMuted, player]);
+
+  useEffect(() => {
     return () => {
-      unloadAudio();
-    };
-  }, []);
-
-  const setupAudio = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: true,
-        shouldDuckAndroid: true,
-      });
-    } catch (error) {
-      console.error('Error setting up audio:', error);
-    }
-  };
-
-  const unloadAudio = async () => {
-    try {
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
+      if (player.playing) {
+        player.pause();
       }
-    } catch (error) {
-      console.error('Error unloading audio:', error);
-    }
-  };
+    };
+  }, [player]);
 
   const togglePlay = async () => {
     try {
-      if (isPlaying) {
-        if (soundRef.current) {
-          try {
-            await soundRef.current.unloadAsync();
-          } catch {}
-          soundRef.current = null;
-        }
-        setIsPlaying(false);
+      if (player.playing) {
+        player.pause();
         onPlayStateChange?.(false);
       } else {
         setIsLoading(true);
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: STREAM_URL },
-          { shouldPlay: true, volume: isMuted ? 0 : volume },
-          onPlaybackStatusUpdate
-        );
-        soundRef.current = sound;
-        setIsPlaying(true);
+        player.play();
         setIsLoading(false);
         onPlayStateChange?.(true);
       }
@@ -77,30 +46,21 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
     }
   };
 
-  const onPlaybackStatusUpdate = (status: any) => {
-    if (status.isLoaded && status.didJustFinish) {
-      setIsPlaying(false);
-      onPlayStateChange?.(false);
-    }
-  };
-
-  const toggleMute = async () => {
+  const toggleMute = () => {
     const newMuted = !isMuted;
     setIsMuted(newMuted);
-    if (soundRef.current) {
-      await soundRef.current.setVolumeAsync(newMuted ? 0 : volume);
-    }
+    player.volume = newMuted ? 0 : volume;
   };
 
   const getStatusText = () => {
     if (isLoading) return 'CONNECTING...';
-    if (isPlaying) return 'ONLINE';
+    if (player.playing) return 'ONLINE';
     return 'STANDBY';
   };
 
   const getStatusColor = () => {
     if (isLoading) return Colors.yellow;
-    if (isPlaying) return Colors.green;
+    if (player.playing) return Colors.green;
     return Colors.textDim;
   };
 
@@ -128,7 +88,7 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
             <View style={[styles.corner, styles.cornerBL]} />
             <View style={[styles.corner, styles.cornerBR]} />
           </View>
-          {isPlaying ? (
+          {player.playing ? (
             <>
               <Pause size={64} color={Colors.green} strokeWidth={3} />
               <Text style={styles.buttonLabel}>PAUSE</Text>
