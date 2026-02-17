@@ -7,7 +7,7 @@ import { NowPlaying } from '@/components/NowPlaying';
 import { HazardStripes } from '@/components/HazardStripes';
 import { TacticalPanel } from '@/components/TacticalPanel';
 import { icecastService, StreamMetadata } from '@/services/icecastMetadata';
-import { Heart, ExternalLink, MessageCircle, Radio } from 'lucide-react-native';
+import { ExternalLink, MessageCircle, Radio } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const [metadata, setMetadata] = useState<StreamMetadata>({
@@ -62,24 +62,6 @@ export default function HomeScreen() {
         <RadioPlayer />
 
         <NowPlaying metadata={metadata} />
-
-        <TouchableOpacity
-          onPress={() => Linking.openURL('https://ko-fi.com/warchildofthecreek')}
-          activeOpacity={0.8}
-        >
-          <TacticalPanel style={styles.donationBanner}>
-            <View style={styles.donationContent}>
-              <Heart size={24} color={Colors.magenta} />
-              <View style={styles.donationText}>
-                <Text style={styles.donationTitle}>SUPPORT CREEK RADIO</Text>
-                <Text style={styles.donationSubtitle}>
-                  Help keep democracy broadcasting
-                </Text>
-              </View>
-              <ExternalLink size={20} color={Colors.green} />
-            </View>
-          </TacticalPanel>
-        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => Linking.openURL('https://discord.gg/UGHCGqPEej')}
@@ -196,30 +178,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 1,
-  },
-  donationBanner: {
-    marginBottom: 16,
-  },
-  donationContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  donationText: {
-    flex: 1,
-  },
-  donationTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: Colors.magenta,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  donationSubtitle: {
-    fontSize: 11,
-    color: Colors.textDim,
-    textTransform: 'uppercase',
-    marginTop: 2,
   },
   discordBanner: {
     marginBottom: 16,

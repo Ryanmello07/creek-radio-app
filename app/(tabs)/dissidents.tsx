@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   },
   extremeThreatBadge: {
     position: 'absolute',
-    top: 16,
+    top: 28,
     right: 16,
     backgroundColor: Colors.red,
     paddingHorizontal: 12,

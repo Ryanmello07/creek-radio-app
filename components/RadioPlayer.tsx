@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';
 import { useAudioPlayer, AudioSource } from 'expo-audio';
@@ -16,15 +16,35 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
   const player = useAudioPlayer({ uri: STREAM_URL } as AudioSource);
+  const volumeCheckInterval = useRef<NodeJS.Timeout | null>(null);
 
+  // Sync volume display with player's actual volume
   useEffect(() => {
+    // Set initial volume
     player.volume = isMuted ? 0 : volume;
+
+    // Poll player volume to sync with system volume changes (hardware buttons)
+    volumeCheckInterval.current = setInterval(() => {
+      const currentPlayerVolume = player.volume;
+      if (!isMuted && Math.abs(currentPlayerVolume - volume) > 0.01) {
+        setVolume(currentPlayerVolume);
+      }
+    }, 200);
+
+    return () => {
+      if (volumeCheckInterval.current) {
+        clearInterval(volumeCheckInterval.current);
+      }
+    };
   }, [volume, isMuted, player]);
 
   useEffect(() => {
     return () => {
       if (player.playing) {
         player.pause();
+      }
+      if (volumeCheckInterval.current) {
+        clearInterval(volumeCheckInterval.current);
       }
     };
   }, [player]);
