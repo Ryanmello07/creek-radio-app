@@ -1,4 +1,4 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import { Colors } from '@/constants/Colors';
 
 interface HazardStripesProps {
@@ -7,14 +7,32 @@ interface HazardStripesProps {
 }
 
 export function HazardStripes({ variant = 'default', style }: HazardStripesProps) {
+  const { width: screenWidth } = useWindowDimensions();
   const color = variant === 'red' ? Colors.red : Colors.magenta;
   const height = variant === 'thin' ? 6 : 12;
   const stripeWidth = variant === 'thin' ? 6 : 10;
 
+  // Calculate the number of stripes needed based on screen width
+  // Account for 45-degree skew by using diagonal distance (width * sqrt(2))
+  // Add 50% buffer to ensure full coverage on all screen sizes
+  const diagonalDistance = screenWidth * Math.sqrt(2);
+  const stripeCount = Math.ceil((diagonalDistance * 1.5) / stripeWidth);
+
+  // Calculate horizontal offset to center the stripes
+  const horizontalOffset = (stripeCount * stripeWidth - screenWidth) / 2;
+
   return (
     <View style={[styles.wrapper, { height }, style]}>
-      <View style={[styles.stripesRow, { top: -height, bottom: -height, left: -40, right: -40 }]}>
-        {[...Array(80)].map((_, i) => (
+      <View style={[
+        styles.stripesRow,
+        {
+          top: -height,
+          bottom: -height,
+          left: -horizontalOffset,
+          right: -horizontalOffset
+        }
+      ]}>
+        {[...Array(stripeCount)].map((_, i) => (
           <View
             key={i}
             style={{
