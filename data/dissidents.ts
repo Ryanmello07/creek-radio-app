@@ -17,7 +17,6 @@ export const dissidents: Dissident[] = [
     notes: 'Threat level: MAXIMUM. Approached during a combat operation and executed high-ranking officer in cold blood. Considered armed and extremely dangerous. Do not engage without full military support.',
     date_added: '2186-11-01T00:00:00.000Z',
     mostWanted: true,
-    profileImage: 'nil',
   },
   {
     id: 'atoris-001',
