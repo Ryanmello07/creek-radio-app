@@ -14,6 +14,7 @@ interface RadioPlayerProps {
 
 export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
   const player = useAudioPlayer({ uri: STREAM_URL } as AudioSource);
@@ -49,22 +50,24 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (player.playing) {
+      if (isPlaying) {
         player.pause();
       }
       if (volumeCheckInterval.current) {
         clearInterval(volumeCheckInterval.current);
       }
     };
-  }, [player]);
+  }, [player, isPlaying]);
 
   const togglePlay = async () => {
     try {
-      if (player.playing) {
+      if (isPlaying) {
+        setIsPlaying(false);
         player.pause();
         onPlayStateChange?.(false);
       } else {
         setIsLoading(true);
+        setIsPlaying(true);
         player.play();
         setIsLoading(false);
         onPlayStateChange?.(true);
@@ -72,6 +75,7 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
     } catch (error) {
       console.error('Playback error:', error);
       setIsLoading(false);
+      setIsPlaying(false);
     }
   };
 
@@ -90,13 +94,13 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
 
   const getStatusText = () => {
     if (isLoading) return 'CONNECTING...';
-    if (player.playing) return 'ONLINE';
+    if (isPlaying) return 'ONLINE';
     return 'STANDBY';
   };
 
   const getStatusColor = () => {
     if (isLoading) return Colors.yellow;
-    if (player.playing) return Colors.green;
+    if (isPlaying) return Colors.green;
     return Colors.textDim;
   };
 
@@ -124,7 +128,7 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
             <View style={[styles.corner, styles.cornerBL]} />
             <View style={[styles.corner, styles.cornerBR]} />
           </View>
-          {player.playing ? (
+          {isPlaying ? (
             <>
               <Pause size={64} color={Colors.green} strokeWidth={3} />
               <Text style={styles.buttonLabel}>PAUSE</Text>
