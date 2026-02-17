@@ -64,7 +64,7 @@ export default function HomeScreen() {
         <NowPlaying metadata={metadata} />
 
         <TouchableOpacity
-          onPress={() => Linking.openURL('https://discord.gg/UGHCGqPEej')}
+          onPress={() => Linking.openURL('https://discord.gg/creekradio')}
           activeOpacity={0.8}
         >
           <TacticalPanel style={styles.discordBanner}>
