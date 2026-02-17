@@ -22,7 +22,7 @@ export const dissidents: Dissident[] = [
   {
     id: 'atoris-001',
     name: 'Atoris',
-    reason: 'Executing a on duty cadet without permission from an officer',
+    reason: 'Unauthorized execution of a highly wanted dissident: Officer did not complete basic Truth Enforcement training.',
     notes: null,
     date_added: '2186-11-15T00:00:00.000Z',
     minorInfraction: true,
