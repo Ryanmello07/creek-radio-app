@@ -87,3 +87,5 @@ npm run lint
 - This is a fan project and not affiliated with Arrowhead Game Studios
 - The app will remain ad-free and free to use
 - All content matches the Creek Radio website functionality
+
+- Building apk: eas build --platform android --profile preview
