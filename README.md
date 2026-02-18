@@ -73,7 +73,7 @@ npx expo prebuild --platform android
 # 6. Build APK
 echo "🏗️  Building debug APK..."
 cd android
-./gradlew clean assembleDebug
+./gradlew assembleRelease
 
 # 7. Show APK location
 APK_PATH="$(pwd)/app/build/outputs/apk/debug/app-debug.apk"
