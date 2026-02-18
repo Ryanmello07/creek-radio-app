@@ -76,7 +76,7 @@ cd android
 ./gradlew assembleRelease
 
 # 7. Show APK location
-APK_PATH="$(pwd)/app/build/outputs/apk/debug/app-debug.apk"
+APK_PATH="$(pwd)/app/build/outputs/apk/release/app-release.apk"
 echo ""
 echo "🎉 BUILD COMPLETE!"
 echo "APK location: $APK_PATH"
