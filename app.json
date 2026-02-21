@@ -13,7 +13,12 @@
         "foregroundImage": "./assets/images/creek_radio_icon_512.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.creekradio.app"
+      "package": "com.creekradio.app",
+      "permissions": [
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "ios": {
       "supportsTablet": true,

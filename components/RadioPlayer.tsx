@@ -6,6 +6,12 @@ import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
 import { TacticalPanel } from './TacticalPanel';
 
+const LOCK_SCREEN_METADATA = {
+  title: 'Creek Radio',
+  artist: 'Super Earth Broadcasting Network',
+  albumTitle: 'Live Stream',
+};
+
 const STREAM_URL = 'https://streaming.live365.com/a50373';
 
 interface RadioPlayerProps {
@@ -64,6 +70,9 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
       if (isPlaying) {
         player.pause();
       }
+      if (Platform.OS !== 'web') {
+        player.setActiveForLockScreen(false);
+      }
       if (volumeCheckInterval.current) {
         clearInterval(volumeCheckInterval.current);
       }
@@ -75,11 +84,17 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
       if (isPlaying) {
         setIsPlaying(false);
         player.pause();
+        if (Platform.OS !== 'web') {
+          player.setActiveForLockScreen(false);
+        }
         onPlayStateChange?.(false);
       } else {
         setIsLoading(true);
         setIsPlaying(true);
         player.play();
+        if (Platform.OS !== 'web') {
+          player.setActiveForLockScreen(true, LOCK_SCREEN_METADATA);
+        }
         setIsLoading(false);
         onPlayStateChange?.(true);
       }
