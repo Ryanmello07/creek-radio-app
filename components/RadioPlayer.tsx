@@ -1,68 +1,105 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';
-import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player';
+import { useAudioPlayer, AudioSource, setAudioModeAsync } from 'expo-audio';
 import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
 import { TacticalPanel } from './TacticalPanel';
 
 const STREAM_URL = 'https://streaming.live365.com/a50373';
 
-const RADIO_TRACK = {
-  id: 'creek-radio',
-  url: STREAM_URL,
-  title: 'Creek Radio',
-  artist: 'Super Earth Broadcasting Network',
-  artwork: require('../assets/images/creek_radio_icon_512.png'),
-  isLiveStream: true,
-};
-
 interface RadioPlayerProps {
   onPlayStateChange?: (isPlaying: boolean) => void;
 }
 
 export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
-  const { state } = usePlaybackState();
+  const player = useAudioPlayer({ uri: STREAM_URL } as AudioSource);
+  const volumeCheckInterval = useRef<NodeJS.Timeout | null>(null);
+  const volumeRef = useRef(0.7);
 
-  const isPlaying = state === State.Playing;
-  const isLoading = state === State.Loading || state === State.Buffering;
-
+  // Keep ref in sync with state
   useEffect(() => {
-    onPlayStateChange?.(isPlaying);
-  }, [isPlaying, onPlayStateChange]);
+    volumeRef.current = volume;
+  }, [volume]);
+
+  // Set player volume when volume or mute state changes
+  useEffect(() => {
+    player.volume = isMuted ? 0 : volume;
+  }, [volume, isMuted, player]);
+
+  // Poll player volume to sync with system volume changes (hardware buttons)
+  useEffect(() => {
+    volumeCheckInterval.current = setInterval(() => {
+      const currentPlayerVolume = player.volume;
+      if (!isMuted && Math.abs(currentPlayerVolume - volumeRef.current) > 0.01) {
+        setVolume(currentPlayerVolume);
+      }
+    }, 200);
+
+    return () => {
+      if (volumeCheckInterval.current) {
+        clearInterval(volumeCheckInterval.current);
+      }
+    };
+  }, [isMuted, player]);
+
+  // Configure audio mode for background playback
+  useEffect(() => {
+    setAudioModeAsync({
+      shouldPlayInBackground: true,
+      playsInSilentMode: true,
+      interruptionMode: 'doNotMix',
+    }).catch((error) => {
+      console.error('Failed to set audio mode:', error);
+    });
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (isPlaying) {
+        player.pause();
+      }
+      if (volumeCheckInterval.current) {
+        clearInterval(volumeCheckInterval.current);
+      }
+    };
+  }, [player, isPlaying]);
 
   const togglePlay = async () => {
-    if (Platform.OS === 'web') return;
     try {
-      const queue = await TrackPlayer.getQueue();
-      if (queue.length === 0) {
-        await TrackPlayer.add(RADIO_TRACK);
-        await TrackPlayer.setVolume(isMuted ? 0 : volume);
-      }
       if (isPlaying) {
-        await TrackPlayer.pause();
+        setIsPlaying(false);
+        player.pause();
+        onPlayStateChange?.(false);
       } else {
-        await TrackPlayer.play();
+        setIsLoading(true);
+        setIsPlaying(true);
+        player.play();
+        setIsLoading(false);
+        onPlayStateChange?.(true);
       }
     } catch (error) {
       console.error('Playback error:', error);
+      setIsLoading(false);
+      setIsPlaying(false);
     }
   };
 
-  const toggleMute = async () => {
+  const toggleMute = () => {
     const newMuted = !isMuted;
     setIsMuted(newMuted);
-    if (Platform.OS !== 'web') {
-      await TrackPlayer.setVolume(newMuted ? 0 : volume);
-    }
+    player.volume = newMuted ? 0 : volume;
   };
 
-  const handleVolumeChange = async (newVolume: number) => {
+  const handleVolumeChange = (newVolume: number) => {
     setVolume(newVolume);
-    if (!isMuted && Platform.OS !== 'web') {
-      await TrackPlayer.setVolume(newVolume);
+    if (!isMuted) {
+      player.volume = newVolume;
     }
   };
 

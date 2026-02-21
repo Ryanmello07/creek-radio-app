@@ -13,11 +13,7 @@
         "foregroundImage": "./assets/images/creek_radio_icon_512.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.creekradio.app",
-      "permissions": [
-        "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
-      ]
+      "package": "com.creekradio.app"
     },
     "ios": {
       "supportsTablet": true,
@@ -33,7 +29,8 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true
