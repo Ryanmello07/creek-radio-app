@@ -75,19 +75,23 @@ export function PropagandaTicker() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.track}>
-        <Animated.View
-          style={[
-            styles.scrollContent,
-            { transform: [{ translateX: scrollAnim }] },
-          ]}
+      <Animated.View
+        style={[
+          styles.scrollContent,
+          { transform: [{ translateX: scrollAnim }] },
+        ]}
+      >
+        <Text
+          style={styles.tickerText}
+          numberOfLines={1}
+          onLayout={onTextLayout}
         >
-          <Text style={styles.tickerText} onLayout={onTextLayout}>
-            {TICKER_TEXT + SEPARATOR}
-          </Text>
-          <Text style={styles.tickerText}>{TICKER_TEXT + SEPARATOR}</Text>
-        </Animated.View>
-      </View>
+          {TICKER_TEXT + SEPARATOR}
+        </Text>
+        <Text style={styles.tickerText} numberOfLines={1}>
+          {TICKER_TEXT + SEPARATOR}
+        </Text>
+      </Animated.View>
     </View>
   );
 }
@@ -98,13 +102,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderDim,
     overflow: 'hidden',
-  },
-  track: {
-    paddingVertical: 6,
-    overflow: 'hidden',
+    height: 28,
+    justifyContent: 'center',
   },
   scrollContent: {
     flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
   },
   tickerText: {
     fontSize: 10,
@@ -112,5 +116,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 2,
     fontWeight: '500',
+    flexShrink: 0,
   },
 });
