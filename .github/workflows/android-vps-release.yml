@@ -1,10 +1,10 @@
-name: Build Android APK on VPS
+name: Build Android APK on VPS and Release
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag (example v1.2.3)
+        description: Release tag to create (example v1.0.0)
         required: true
       branch:
         description: Branch to build
@@ -15,33 +15,42 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-release:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Setup SSH
+      - name: Configure SSH
         run: |
+          set -e
           mkdir -p ~/.ssh
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Build on VPS
+      - name: Build APK on VPS
         id: build
         run: |
           set -e
+
           BUILD_OUT=$(ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
             "bash ${{ secrets.VPS_BUILD_SCRIPT }} ${{ secrets.PROJECT_DIR }} ${{ inputs.branch }}")
 
           echo "$BUILD_OUT"
 
-          APK_PATH=$(echo "$BUILD_OUT" | grep '^APK_PATH=' | head -n 1 | cut -d'=' -f2-)
-          echo "apk_path=" >> $GITHUB_OUTPUT
-          echo "$APK_PATH" >> $GITHUB_OUTPUT
+          APK_PATH=$(echo "$BUILD_OUT" | grep '^APK_PATH=' | head -n 1 | cut -d'=' -f2- | tr -d '\r')
+          if [ -z "$APK_PATH" ]; then
+            echo "APK_PATH not found in build output"
+            exit 1
+          fi
+
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
 
       - name: Download APK from VPS
         run: |
+          set -e
           mkdir -p dist
           scp -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ steps.build.outputs.apk_path }} dist/app-release.apk
+          ls -alh dist
 
       - name: Create GitHub Release and upload APK
         uses: softprops/action-gh-release@v2
