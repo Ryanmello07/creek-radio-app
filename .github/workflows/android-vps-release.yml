@@ -1,0 +1,50 @@
+name: Build Android on VPS and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Git branch to build
+        required: true
+        default: main
+      tag:
+        description: Release tag (example v1.2.3)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-on-vps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (for release notes only)
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Run build on VPS
+        id: vps_build
+        run: |
+          APK_PATH=$(ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "bash ${{ secrets.VPS_BUILD_SCRIPT }} ${{ secrets.PROJECT_DIR }} ${{ inputs.branch }} | tail -n 1")
+          echo "apk_path=" >> $GITHUB_OUTPUT
+          echo "$APK_PATH" >> $GITHUB_OUTPUT
+
+      - name: Download APK from VPS
+        run: |
+          mkdir -p dist
+          scp -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ steps.vps_build.outputs.apk_path }} dist/app-release.apk
+
+      - name: Create GitHub Release and upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.tag }}
+          files: dist/app-release.apk
