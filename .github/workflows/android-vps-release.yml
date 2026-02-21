@@ -1,46 +1,47 @@
-name: Build Android on VPS and Release
+name: Build Android APK on VPS
 
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: Git branch to build
-        required: true
-        default: main
       tag:
         description: Release tag (example v1.2.3)
         required: true
+      branch:
+        description: Branch to build
+        required: true
+        default: main
 
 permissions:
   contents: write
 
 jobs:
-  build-on-vps:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout (for release notes only)
-        uses: actions/checkout@v4
-
-      - name: Setup SSH key
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Run build on VPS
-        id: vps_build
+      - name: Build on VPS
+        id: build
         run: |
-          APK_PATH=$(ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "bash ${{ secrets.VPS_BUILD_SCRIPT }} ${{ secrets.PROJECT_DIR }} ${{ inputs.branch }} | tail -n 1")
+          set -e
+          BUILD_OUT=$(ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "bash ${{ secrets.VPS_BUILD_SCRIPT }} ${{ secrets.PROJECT_DIR }} ${{ inputs.branch }}")
+
+          echo "$BUILD_OUT"
+
+          APK_PATH=$(echo "$BUILD_OUT" | grep '^APK_PATH=' | head -n 1 | cut -d'=' -f2-)
           echo "apk_path=" >> $GITHUB_OUTPUT
           echo "$APK_PATH" >> $GITHUB_OUTPUT
 
       - name: Download APK from VPS
         run: |
           mkdir -p dist
-          scp -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ steps.vps_build.outputs.apk_path }} dist/app-release.apk
+          scp -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ steps.build.outputs.apk_path }} dist/app-release.apk
 
       - name: Create GitHub Release and upload APK
         uses: softprops/action-gh-release@v2
