@@ -6,7 +6,7 @@ import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
 import { TacticalPanel } from './TacticalPanel';
 
-const STREAM_URL = 'https://creekradio.nohost.me/radio';
+const STREAM_URL = 'https://streaming.live365.com/a50373';
 
 interface RadioPlayerProps {
   onPlayStateChange?: (isPlaying: boolean) => void;

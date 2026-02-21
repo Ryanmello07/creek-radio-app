@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 import { Database, ChevronDown, ChevronUp, Music2 } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
@@ -18,7 +17,7 @@ export default function ArchiveScreen() {
   const totalTracks = songs.reduce((sum, s) => sum + s.tracks.length, 0);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.banner}>
           <HazardStripes variant="thin" />
@@ -117,7 +116,7 @@ export default function ArchiveScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -1,36 +1,14 @@
-import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Linking, TouchableOpacity, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { RadioPlayer } from '@/components/RadioPlayer';
 import { NowPlaying } from '@/components/NowPlaying';
 import { HazardStripes } from '@/components/HazardStripes';
 import { TacticalPanel } from '@/components/TacticalPanel';
-import { icecastService, StreamMetadata } from '@/services/icecastMetadata';
 import { ExternalLink, MessageCircle } from 'lucide-react-native';
 
 export default function HomeScreen() {
-  const [metadata, setMetadata] = useState<StreamMetadata>({
-    title: 'Creek Radio',
-    artist: 'Super Earth Broadcasting',
-    song: 'Awaiting Connection...',
-    bitrate: 'Unknown',
-    listeners: 0,
-    serverStatus: 'offline',
-  });
-
-  useEffect(() => {
-    icecastService.startPolling((newMetadata) => {
-      setMetadata(newMetadata);
-    });
-
-    return () => {
-      icecastService.stopPolling();
-    };
-  }, []);
-
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.banner}>
           <HazardStripes variant="thin" />
@@ -55,16 +33,9 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View style={styles.listenerCount}>
-          <View style={styles.listenerIndicator} />
-          <Text style={styles.listenerText}>
-            {metadata.listeners} HELLDIVERS LISTENING
-          </Text>
-        </View>
-
         <RadioPlayer />
 
-        <NowPlaying metadata={metadata} />
+        <NowPlaying />
 
         <TouchableOpacity
           onPress={() => Linking.openURL('https://discord.gg/creekradio')}
@@ -103,7 +74,7 @@ export default function HomeScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -162,30 +133,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginTop: 4,
-  },
-  listenerCount: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: Colors.bgPanel,
-    borderWidth: 1,
-    borderColor: Colors.borderDim,
-  },
-  listenerIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.green,
-  },
-  listenerText: {
-    color: Colors.green,
-    fontSize: 12,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   discordBanner: {
     marginBottom: 16,
