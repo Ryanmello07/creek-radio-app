@@ -1,121 +1,28 @@
-import { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';
-import { useAudioPlayer, AudioSource, setAudioModeAsync } from 'expo-audio';
 import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
 import { TacticalPanel } from './TacticalPanel';
-
-const LOCK_SCREEN_METADATA = {
-  title: 'Creek Radio',
-  artist: 'Super Earth Broadcasting Network',
-  albumTitle: 'Live Stream',
-};
-
-const STREAM_URL = 'https://streaming.live365.com/a50373';
+import { useRadioPlayer } from '@/hooks/useRadioPlayer';
 
 interface RadioPlayerProps {
   onPlayStateChange?: (isPlaying: boolean) => void;
 }
 
 export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.7);
-  const [isMuted, setIsMuted] = useState(false);
-  const player = useAudioPlayer({ uri: STREAM_URL } as AudioSource);
-  const volumeCheckInterval = useRef<NodeJS.Timeout | null>(null);
-  const volumeRef = useRef(0.7);
+  const {
+    isLoading,
+    isPlaying,
+    volume,
+    isMuted,
+    togglePlay,
+    toggleMute,
+    handleVolumeChange,
+  } = useRadioPlayer();
 
-  // Keep ref in sync with state
-  useEffect(() => {
-    volumeRef.current = volume;
-  }, [volume]);
-
-  // Set player volume when volume or mute state changes
-  useEffect(() => {
-    player.volume = isMuted ? 0 : volume;
-  }, [volume, isMuted, player]);
-
-  // Poll player volume to sync with system volume changes (hardware buttons)
-  useEffect(() => {
-    volumeCheckInterval.current = setInterval(() => {
-      const currentPlayerVolume = player.volume;
-      if (!isMuted && Math.abs(currentPlayerVolume - volumeRef.current) > 0.01) {
-        setVolume(currentPlayerVolume);
-      }
-    }, 200);
-
-    return () => {
-      if (volumeCheckInterval.current) {
-        clearInterval(volumeCheckInterval.current);
-      }
-    };
-  }, [isMuted, player]);
-
-  // Configure audio mode for background playback
-  useEffect(() => {
-    setAudioModeAsync({
-      shouldPlayInBackground: true,
-      playsInSilentMode: true,
-      interruptionMode: 'doNotMix',
-    }).catch((error) => {
-      console.error('Failed to set audio mode:', error);
-    });
-  }, []);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (isPlaying) {
-        player.pause();
-      }
-      if (Platform.OS !== 'web') {
-        player.setActiveForLockScreen(false);
-      }
-      if (volumeCheckInterval.current) {
-        clearInterval(volumeCheckInterval.current);
-      }
-    };
-  }, [player, isPlaying]);
-
-  const togglePlay = async () => {
-    try {
-      if (isPlaying) {
-        setIsPlaying(false);
-        player.pause();
-        if (Platform.OS !== 'web') {
-          player.setActiveForLockScreen(false);
-        }
-        onPlayStateChange?.(false);
-      } else {
-        setIsLoading(true);
-        setIsPlaying(true);
-        player.play();
-        if (Platform.OS !== 'web') {
-          player.setActiveForLockScreen(true, LOCK_SCREEN_METADATA);
-        }
-        setIsLoading(false);
-        onPlayStateChange?.(true);
-      }
-    } catch (error) {
-      console.error('Playback error:', error);
-      setIsLoading(false);
-      setIsPlaying(false);
-    }
-  };
-
-  const toggleMute = () => {
-    const newMuted = !isMuted;
-    setIsMuted(newMuted);
-    player.volume = newMuted ? 0 : volume;
-  };
-
-  const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
-    if (!isMuted) {
-      player.volume = newVolume;
-    }
+  const handleTogglePlay = async () => {
+    await togglePlay();
+    onPlayStateChange?.(!isPlaying);
   };
 
   const getStatusText = () => {
@@ -144,7 +51,7 @@ export function RadioPlayer({ onPlayStateChange }: RadioPlayerProps) {
 
       <View style={styles.controls}>
         <TouchableOpacity
-          onPress={togglePlay}
+          onPress={handleTogglePlay}
           style={styles.playButton}
           disabled={isLoading}
         >
@@ -245,7 +152,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
-  playButtonActive: {},
   playButtonCorners: {
     position: 'absolute',
     top: 0,
