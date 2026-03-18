@@ -7,7 +7,7 @@
     "icon": "./assets/images/creek_radio_icon_512.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/creek_radio_icon_512.png",
