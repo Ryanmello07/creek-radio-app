@@ -6,4 +6,8 @@ async function PlaybackService() {
   TrackPlayer.addEventListener(Event.RemoteStop, () => TrackPlayer.stop());
 }
 
-TrackPlayer.registerPlaybackService(() => PlaybackService);
+try {
+  TrackPlayer.registerPlaybackService(() => PlaybackService);
+} catch (e) {
+  console.warn('TrackPlayer.registerPlaybackService failed:', e);
+}
